@@ -1,0 +1,52 @@
+{
+  "name": "chatgpt-io",
+  "version": "1.0.0",
+  "description": "ChatGPT Client API, Blazing Fast, without using browser",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PawanOsman/chatgpt-io.git"
+  },
+  "keywords": [
+    "chatgpt",
+    "gpt3",
+    "gpt",
+    "Language",
+    "model",
+    "Natural",
+    "language",
+    "processing",
+    "(NLP)",
+    "Dialogue",
+    "generation",
+    "Conversation",
+    "Chatbot",
+    "Generative",
+    "Pre-trained",
+    "Transformer",
+    "(GPT)",
+    "Artificial",
+    "intelligence",
+    "(AI)",
+    "Machine",
+    "learning",
+    "(ML)",
+    "Pre-training",
+    "Transfer",
+    "learning",
+    "Text",
+    "generation",
+    "Text",
+    "prediction",
+    "OpenAI"
+  ],
+  "author": "PawanOsman",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/PawanOsman/chatgpt-io/issues"
+  },
+  "homepage": "https://github.com/PawanOsman/chatgpt-io#readme"
+}
