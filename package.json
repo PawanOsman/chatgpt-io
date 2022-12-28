@@ -1,6 +1,6 @@
 {
   "name": "chatgpt-io",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "ChatGPT Client API, Blazing Fast, without using browser",
   "main": "src/index.js",
   "scripts": {
@@ -45,6 +45,10 @@
   ],
   "author": "PawanOsman",
   "license": "MIT",
+  "dependencies": {
+    "socket.io-client": "^4.5.4",
+    "uuid": "^9.0.0"
+  },
   "bugs": {
     "url": "https://github.com/PawanOsman/chatgpt-io/issues"
   },
