@@ -43,9 +43,6 @@ class ChatGPT {
               return now - conversation.lastActive < 1800000; // 2 minutes in milliseconds
             });
         }, 60000);
-        setInterval(() => {
-            console.log(this.conversations)
-        }, 1000);
     }
 
     addConversation(id){
