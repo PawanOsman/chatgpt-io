@@ -2,7 +2,7 @@
 # Update 30-DEC-2022
 ## We have introduced a new method that utilizes a socket for faster performance without the need for a browser anymore. [[C# Version](https://github.com/PawanOsman/ChatGPT.Net)]
 
-# chatgpt-io
+# chatgpt-io - Unofficial API client for ChatGPT
 
 A simple Node.js module for interacting with the ChatGPT without using any **~~Browser~~**.
 ```javascript
@@ -16,6 +16,8 @@ const chatGPT = require("chatgpt-io");
     console.log(response)
 })()
 ```
+## How the new method working without a browser?
+The new method operates without a browser by utilizing a server that has implemented bypass methods to function as a proxy. The library sends requests to the server, which then redirects the request to ChatGPT while bypassing Cloudflare and other bot detection measures. The server then returns the ChatGPT response, ensuring that the method remains effective even if ChatGPT implements changes to prevent bot usage. Our servers are continuously updated to maintain their bypass capabilities.
 
 ## Installation
 
