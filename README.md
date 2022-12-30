@@ -1,4 +1,7 @@
 
+# Update 30-DEC-2022
+## We have introduced a new method that utilizes a socket for faster performance without the need for a browser anymore. [[C# Version](https://github.com/PawanOsman/ChatGPT.Net)]
+
 # chatgpt-io
 
 A simple Node.js module for interacting with the ChatGPT without using any **~~Browser~~**.
