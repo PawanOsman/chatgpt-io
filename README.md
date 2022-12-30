@@ -4,6 +4,13 @@
 
 # chatgpt-io - Unofficial API client for ChatGPT [[Discord](https://discord.pawan.krd)]
 
+[![NPM](https://img.shields.io/npm/v/chatgpt-io.svg)](https://www.npmjs.com/package/chatgpt-io)
+[![GitHub issues](https://img.shields.io/github/issues/pawanosman/chatgpt-io)](https://github.com/PawanOsman/ChatGPT.Net/issues)
+[![GitHub forks](https://img.shields.io/github/forks/pawanosman/chatgpt-io)](https://github.com/pawanosman/ChatGPT.Net/network)
+[![GitHub stars](https://img.shields.io/github/stars/pawanosman/chatgpt-io)](https://github.com/pawanosman/ChatGPT.Net/stargazers)
+[![GitHub license](https://img.shields.io/github/license/pawanosman/chatgpt-io)](https://github.com/pawanosman/ChatGPT.Net)
+<a href="https://discord.pawan.krd"><img src="https://img.shields.io/discord/1055397662976905229?color=5865F2&logo=discord&logoColor=white" alt="Discord server"/></a>
+
 A simple Node.js module for interacting with the ChatGPT without using any **~~Browser~~**.
 ```javascript
 const chatGPT = require("chatgpt-io");
