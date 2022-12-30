@@ -9,7 +9,7 @@
 [![GitHub forks](https://img.shields.io/github/forks/pawanosman/chatgpt-io)](https://github.com/pawanosman/ChatGPT.Net/network)
 [![GitHub stars](https://img.shields.io/github/stars/pawanosman/chatgpt-io)](https://github.com/pawanosman/ChatGPT.Net/stargazers)
 [![GitHub license](https://img.shields.io/github/license/pawanosman/chatgpt-io)](https://github.com/pawanosman/ChatGPT.Net)
-<a href="https://discord.pawan.krd"><img src="https://img.shields.io/discord/1055397662976905229?color=5865F2&logo=discord&logoColor=white" alt="Discord server"/></a>
+[![Discord server](https://img.shields.io/discord/1055397662976905229?color=5865F2&logo=discord&logoColor=white)](https://discord.pawan.krd)
 
 A simple Node.js module for interacting with the ChatGPT without using any **~~Browser~~**.
 ```javascript
