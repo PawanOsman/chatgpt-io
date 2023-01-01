@@ -1,6 +1,7 @@
 
 # Update 30-DEC-2022
-## We have introduced a new method that utilizes a socket for faster performance without the need for a browser anymore. [[C# Version](https://github.com/PawanOsman/ChatGPT.Net)]
+## We have introduced a new method that utilizes a socket for faster performance without the need for a browser anymore. [[C# Version](https://github.com/PawanOsman/ChatGPT.Net)][[Python Version](https://github.com/PawanOsman/ChatGPT.py)]
+
 ## For support join [[Discord](https://discord.pawan.krd)]
 # chatgpt-io - Unofficial API client for ChatGPT [[Discord](https://discord.pawan.krd)]
 
