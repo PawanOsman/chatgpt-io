@@ -72,9 +72,8 @@ class ChatGPT {
 		let conversation = this.conversations.find(
 			(conversation) => conversation.id === id,
 		);
-		if (conversation) {
-			conversation.conversationId = null;
-		}
+		if (!conversation) return;
+		conversation.conversationId = null;
 	}
 
 	async Wait(time) {
