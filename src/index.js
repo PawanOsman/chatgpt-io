@@ -129,7 +129,13 @@ class ChatGPT {
 				resolve(data);
 			});
 		});
-		if (data.error) console.log(`Error: ${data.error}`);
+		if (data.error) {
+			if (!this.auth) {
+				// The provided token is invalid, throw error
+				throw new Error(data.error);
+			}
+			console.log(`Error: ${data.error}`);
+		}
 		this.sessionToken = data.sessionToken;
 		this.auth = data.auth;
 		this.expires = data.expires;
