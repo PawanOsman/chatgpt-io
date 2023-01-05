@@ -108,3 +108,24 @@ const chatGPT = require("chatgpt-io");
     console.log(response2)
 })()
 ```
+
+## Server Example
+
+In `examples/server.js` you can find an example of how to use the `chatgpt-io` module to create a simple Fastify server that can be used to send messages to ChatGPT.
+
+Run the server by setting the `CHATGPT_SESSION_TOKEN` environment variable to your ChatGPT API session token and running the following command:
+
+```bash
+node examples/server.js
+```
+
+You can also set the port with the `CHATGPT_PORT` environment variable. The default port is `3000`.
+
+To send a message to the server, make a `POST` request to `http://localhost:<port>/ask` with the following JSON body:
+
+```json
+{
+    "message": "Hello?",
+    "conversation_id": "any-unique-string"
+}
+```
