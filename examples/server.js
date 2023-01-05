@@ -39,7 +39,7 @@ app.post("/ask", async (req, res) => {
 });
 
 const port = process.env.CHATGPT_PORT || 3000;
-app.listen(port, (err) => {
+app.listen({port}, (err) => {
     if (err) {
         console.error(err);
         process.exit(1);
