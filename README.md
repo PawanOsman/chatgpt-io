@@ -129,3 +129,5 @@ To send a message to the server, make a `POST` request to `http://localhost:<por
     "conversation_id": "any-unique-string"
 }
 ```
+
+A standalone version of this API server can be found at [chatgpt-io-api](https://github.com/waylaidwanderer/chatgpt-io-api).
