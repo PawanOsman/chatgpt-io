@@ -76,14 +76,14 @@ class ChatGPT {
 		conversation.conversationId = null;
 	}
 
-	async Wait(time) {
+	wait(time) {
 		return new Promise((resolve) => {
 			setTimeout(resolve, time);
 		});
 	}
 
 	async waitForReady() {
-		while (!this.ready) await this.Wait(25);
+		while (!this.ready) await this.wait(25);
 		console.log("Ready!!");
 	}
 
@@ -123,13 +123,19 @@ class ChatGPT {
 	}
 
 	async getTokens() {
-		await this.Wait(1000);
+		await this.wait(1000);
 		let data = await new Promise((resolve) => {
 			this.socket.emit("getSession", this.sessionToken, (data) => {
 				resolve(data);
 			});
 		});
-		if (data.error) console.log(`Error: ${data.error}`);
+		if (data.error) {
+			if (!this.auth) {
+				// The provided token is invalid, throw error
+				throw new Error(data.error);
+			}
+			console.log(`Error: ${data.error}`);
+		}
 		this.sessionToken = data.sessionToken;
 		this.auth = data.auth;
 		this.expires = data.expires;
