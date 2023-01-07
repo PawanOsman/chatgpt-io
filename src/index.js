@@ -5,6 +5,11 @@ class ChatGPT {
 	constructor(sessionToken, bypassNode = "https://gpt.pawan.krd") {
 		this.ready = false;
 		this.socket = io.connect(bypassNode, {
+			query: {
+				client: 'nodejs',
+				version: '1.0.5',
+				versionCode: '105'
+			},
 			pingInterval: 10000,
 			pingTimeout: 5000,
 			reconnection: true,
@@ -27,6 +32,7 @@ class ChatGPT {
 		this.socket.on("disconnect", () => {
 			console.log("Disconnected from server");
 		});
+		this.socket.on("serverMessage", console.log);
 		setInterval(async () => {
 			if (this.pauseTokenChecks) return;
 			this.pauseTokenChecks = true;
