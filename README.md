@@ -1,8 +1,9 @@
-
 # Update 30-DEC-2022
+
 ## We have introduced a new method that utilizes a socket for faster performance without the need for a browser anymore. [[C# Version](https://github.com/PawanOsman/ChatGPT.Net)][[Python Version](https://github.com/PawanOsman/ChatGPT.py)]
 
 ## For support join [[Discord](https://discord.pawan.krd)]
+
 # chatgpt-io - Unofficial API client for ChatGPT [[Discord](https://discord.pawan.krd)]
 
 [![NPM](https://img.shields.io/npm/v/chatgpt-io.svg)](https://www.npmjs.com/package/chatgpt-io)
@@ -13,18 +14,21 @@
 [![Discord server](https://img.shields.io/discord/1055397662976905229?color=5865F2&logo=discord&logoColor=white)](https://discord.pawan.krd)
 
 A simple Node.js module for interacting with the ChatGPT without using any **~~Browser~~**.
+
 ```javascript
-const chatGPT = require("chatgpt-io");
+import chatGPT from "chatgpt-io";
 
-(async function(){
-    let bot = new chatGPT("<SESSION_TOKEN>");
-    await bot.waitForReady();
+(async () => {
+  let bot = new chatGPT("<SESSION_TOKEN>");
+  await bot.waitForReady();
 
-    let response = await bot.ask("Hello?");
-    console.log(response)
-})()
+  let response = await bot.ask("Hello?");
+  console.log(response);
+})();
 ```
+
 ## How the new method working without a browser?
+
 The new method operates without a browser by utilizing a server that has implemented bypass methods to function as a proxy. The library sends requests to the server, which then redirects the request to ChatGPT while bypassing Cloudflare and other bot detection measures. The server then returns the ChatGPT response, ensuring that the method remains effective even if ChatGPT implements changes to prevent bot usage. Our servers are continuously updated to maintain their bypass capabilities.
 
 ## Installation
@@ -33,23 +37,23 @@ To install the package, run the following command:
 
 ```bash
 npm install chatgpt-io
-``` 
+```
 
 ## Usage
 
 To use the package, require it in your code and create a new instance of the `chatGPT` class, passing in your ChatGPT API session token as an argument.
 
 ```javascript
-const chatGPT = require("chatgpt-io");
+import chatGPT from "chatgpt-io";
 
 let bot = new chatGPT("<SESSION_TOKEN>");
-``` 
+```
 
 Before making any requests to the API, you should wait for the `bot` instance to be ready by calling the `waitForReady` method. This ensures that the connection to the API has been established and any necessary setup has been completed.
 
 ```javascript
 await bot.waitForReady();
-``` 
+```
 
 Once the `bot` instance is ready, you can send a message to the API using the `ask` method. This method takes a message string as its first argument and an optional conversation ID as its second argument. If a conversation ID is not provided, the default conversation will be used.
 
@@ -73,7 +77,7 @@ Creates a new instance of the `ChatGPT` class.
 
 ##### Parameters
 
--   `sessionToken` (string): Your ChatGPT API session token.
+- `sessionToken` (string): Your ChatGPT API session token.
 
 #### `waitForReady(): Promise<void>`
 
@@ -85,28 +89,28 @@ Sends a message to the API and returns a promise that resolves with the API's re
 
 ##### Parameters
 
--   `message` (string): The message to send to the API.
--   `conversationId` (string, optional): The ID of the conversation to send the message to. If not provided, the default conversation will be used.
+- `message` (string): The message to send to the API.
+- `conversationId` (string, optional): The ID of the conversation to send the message to. If not provided, the default conversation will be used.
 
 ## Example
 
 Here is an example of how to use the `chatgpt-io` module to send a message to the API and log the response:
 
 ```javascript
-const chatGPT = require("chatgpt-io");
+import chatGPT from "chatgpt-io";
 
-(async function(){
-    let bot = new chatGPT("<SESSION_TOKEN>");
-    await bot.waitForReady();
+(async function () {
+  let bot = new chatGPT("<SESSION_TOKEN>");
+  await bot.waitForReady();
 
-    // default conversation
-    let response = await bot.ask("Hello?");
-    console.log(response)
+  // default conversation
+  let response = await bot.ask("Hello?");
+  console.log(response);
 
-    // specific conversation
-    let response2 = await bot.ask("Hello?", "any-unique-string");
-    console.log(response2)
-})()
+  // specific conversation
+  let response2 = await bot.ask("Hello?", "any-unique-string");
+  console.log(response2);
+})();
 ```
 
 ## Server Example
@@ -125,8 +129,8 @@ To send a message to the server, make a `POST` request to `http://localhost:<por
 
 ```json
 {
-    "message": "Hello?",
-    "conversation_id": "any-unique-string"
+  "message": "Hello?",
+  "conversation_id": "any-unique-string"
 }
 ```
 

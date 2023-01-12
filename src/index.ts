@@ -163,4 +163,4 @@ class ChatGPT {
   }
 }
 
-module.exports = ChatGPT;
+export default ChatGPT;
