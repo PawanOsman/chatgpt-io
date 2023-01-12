@@ -67,6 +67,27 @@ console.log(response2);
 
 The `ask` method returns a promise that resolves with the API's response to the message.
 
+
+## ES6 Update
+This library is now using ES6 syntax and is intended to be used with the "module" type in your package.json file. This means that you will need to update your package.json file to include the following:
+
+```json
+{
+  "type": "module"
+}
+```
+
+In addition, you will need to change any instances of "require" to "import" in your code. For example, instead of:
+
+```javascript
+const chatGPT= require('chatgpt-io');
+```
+You will now use:
+
+```javascript
+import chatGPT from 'chatgpt-io';
+```
+
 ## API Reference
 
 ### `ChatGPT` class
