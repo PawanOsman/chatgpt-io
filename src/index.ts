@@ -11,14 +11,14 @@ class ChatGPT {
   pauseTokenChecks: boolean;
   constructor(
     sessionToken: string,
-    bypassNode: string = "https://gpt.pawan.krd"
+    bypassNode: string = "https://gpt.pawan.krd",
   ) {
     this.ready = false;
     this.socket = io(bypassNode, {
       query: {
         client: "nodejs",
-        version: "1.0.5",
-        versionCode: "105",
+        version: "1.0.6",
+        versionCode: "106",
       },
       transportOptions: {
         websocket: {
@@ -27,7 +27,7 @@ class ChatGPT {
         },
       },
       reconnection: true,
-      reconnectionAttempts: 1000,
+      reconnectionAttempts: 100,
       reconnectionDelay: 1000,
       reconnectionDelayMax: 5000,
       timeout: 10000,
@@ -78,7 +78,7 @@ class ChatGPT {
 
   getConversationById(id) {
     let conversation = this.conversations.find(
-      (conversation) => conversation.id === id
+      (conversation) => conversation.id === id,
     );
     if (!conversation) {
       conversation = this.addConversation(id);
@@ -90,7 +90,7 @@ class ChatGPT {
 
   resetConversation(id = "default") {
     let conversation = this.conversations.find(
-      (conversation) => conversation.id === id
+      (conversation) => conversation.id === id,
     );
     if (!conversation) return;
     conversation.conversationId = null;
@@ -121,7 +121,7 @@ class ChatGPT {
         },
         (data) => {
           resolve(data);
-        }
+        },
       );
     });
 
@@ -136,7 +136,7 @@ class ChatGPT {
   validateToken(token) {
     if (!token) return false;
     const parsed = JSON.parse(
-      Buffer.from(token.split(".")[1], "base64").toString()
+      Buffer.from(token.split(".")[1], "base64").toString(),
     );
 
     return Date.now() <= parsed.exp * 1000;
