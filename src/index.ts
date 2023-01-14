@@ -11,7 +11,16 @@ class ChatGPT {
   pauseTokenChecks: boolean;
   constructor(
     sessionToken: string,
-    bypassNode: string = "https://gpt.pawan.krd"
+    bypassNode: string = "https://gpt.pawan.krd",
+    options: {
+      reconnection: boolean;
+      forceNew: boolean;
+      logs: boolean;
+    } = {
+      reconnection: true,
+      forceNew: true,
+      logs: true,
+    }
   ) {
     this.ready = false;
     this.socket = io(bypassNode, {
@@ -26,14 +35,14 @@ class ChatGPT {
           pingTimeout: 5000,
         },
       },
-      reconnection: true,
+      reconnection: options.reconnection,
       reconnectionAttempts: 1000,
       reconnectionDelay: 1000,
       reconnectionDelayMax: 5000,
       timeout: 10000,
       transports: ["websocket", "polling"],
       upgrade: false,
-      forceNew: true,
+      forceNew: options.forceNew,
     });
     this.sessionToken = sessionToken;
     this.conversations = [];
@@ -41,10 +50,14 @@ class ChatGPT {
     this.expires = Date.now();
     this.pauseTokenChecks = false;
     this.socket.on("connect", () => {
-      console.log("Connected to server");
+      if (options.logs) {
+        console.log("Connected to server");
+      }
     });
     this.socket.on("disconnect", () => {
-      console.log("Disconnected from server");
+      if (options.logs) {
+        console.log("Disconnected from server");
+      }
     });
     this.socket.on("serverMessage", console.log);
     setInterval(async () => {
