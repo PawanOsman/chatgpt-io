@@ -22,12 +22,13 @@ class ChatGPT {
       logs: true,
     }
   ) {
+    var { reconnection, forceNew, logs } = options;
     this.ready = false;
     this.socket = io(bypassNode, {
       query: {
         client: "nodejs",
-        version: "1.0.5",
-        versionCode: "105",
+        version: "1.0.6",
+        versionCode: "106",
       },
       transportOptions: {
         websocket: {
@@ -35,14 +36,14 @@ class ChatGPT {
           pingTimeout: 5000,
         },
       },
-      reconnection: options.reconnection,
-      reconnectionAttempts: 1000,
+      reconnection: reconnection,
+      reconnectionAttempts: 100,
       reconnectionDelay: 1000,
       reconnectionDelayMax: 5000,
       timeout: 10000,
       transports: ["websocket", "polling"],
       upgrade: false,
-      forceNew: options.forceNew,
+      forceNew: forceNew,
     });
     this.sessionToken = sessionToken;
     this.conversations = [];
@@ -50,12 +51,12 @@ class ChatGPT {
     this.expires = Date.now();
     this.pauseTokenChecks = false;
     this.socket.on("connect", () => {
-      if (options.logs) {
+      if (logs) {
         console.log("Connected to server");
       }
     });
     this.socket.on("disconnect", () => {
-      if (options.logs) {
+      if (logs) {
         console.log("Disconnected from server");
       }
     });
@@ -78,7 +79,7 @@ class ChatGPT {
     }, 60000);
   }
 
-  addConversation(id) {
+  addConversation(id: string) {
     let conversation = {
       id: id,
       conversationId: null,
@@ -89,7 +90,7 @@ class ChatGPT {
     return conversation;
   }
 
-  getConversationById(id) {
+  getConversationById(id: string) {
     let conversation = this.conversations.find(
       (conversation) => conversation.id === id
     );
@@ -101,7 +102,7 @@ class ChatGPT {
     return conversation;
   }
 
-  resetConversation(id = "default") {
+  resetConversation(id: string = "default") {
     let conversation = this.conversations.find(
       (conversation) => conversation.id === id
     );
@@ -120,7 +121,7 @@ class ChatGPT {
     console.log("Ready!!");
   }
 
-  async ask(prompt, id = "default") {
+  async ask(prompt: string, id: string = "default") {
     if (!this.auth || !this.validateToken(this.auth)) await this.getTokens();
     let conversation = this.getConversationById(id);
     let data: any = await new Promise((resolve) => {
@@ -132,7 +133,7 @@ class ChatGPT {
           conversationId: conversation.conversationId,
           auth: this.auth,
         },
-        (data) => {
+        (data: any) => {
           resolve(data);
         }
       );
@@ -146,7 +147,7 @@ class ChatGPT {
     return data.answer;
   }
 
-  validateToken(token) {
+  validateToken(token: string) {
     if (!token) return false;
     const parsed = JSON.parse(
       Buffer.from(token.split(".")[1], "base64").toString()
