@@ -33,7 +33,7 @@ class ChatGPT {
       timeout: 10000,
       transports: ["websocket", "polling"],
       upgrade: false,
-      forceNew: true,
+      forceNew: false,
     });
     this.sessionToken = sessionToken;
     this.conversations = [];
