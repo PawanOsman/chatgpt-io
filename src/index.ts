@@ -9,6 +9,8 @@ class ChatGPT {
   auth: any;
   expires: number;
   pauseTokenChecks: boolean;
+  logs: boolean;
+  on: any;
   constructor(
     sessionToken: string,
     bypassNode: string = "https://gpt.pawan.krd",
@@ -50,6 +52,8 @@ class ChatGPT {
     this.auth = null;
     this.expires = Date.now();
     this.pauseTokenChecks = false;
+    this.logs = logs;
+    this.on = this.socket.on;
     this.socket.on("connect", () => {
       if (logs) {
         console.log("Connected to server");
@@ -118,7 +122,9 @@ class ChatGPT {
 
   async waitForReady() {
     while (!this.ready) await this.wait(25);
-    console.log("Ready!!");
+    if (this.logs) {
+      console.log("Ready!!");
+    }
   }
 
   async ask(prompt: string, id: string = "default") {
@@ -139,7 +145,7 @@ class ChatGPT {
       );
     });
 
-    if (data.error) console.log(`Error: ${data.error}`);
+    if (data.error) throw new Error(data.error);
 
     conversation.parentId = data.messageId;
     conversation.conversationId = data.conversationId;
@@ -164,11 +170,7 @@ class ChatGPT {
       });
     });
     if (data.error) {
-      if (!this.auth) {
-        // The provided token is invalid, throw error
-        throw new Error(data.error);
-      }
-      console.log(`Error: ${data.error}`);
+      throw new Error(data.error);
     }
     this.sessionToken = data.sessionToken;
     this.auth = data.auth;

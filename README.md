@@ -68,8 +68,8 @@ console.log(response2);
 
 The `ask` method returns a promise that resolves with the API's response to the message.
 
-
 ## ES6 Update
+
 This library is now using ES6 syntax and is intended to be used with the "module" type in your package.json file. This means that you will need to update your package.json file to include the following:
 
 ```json
@@ -81,12 +81,13 @@ This library is now using ES6 syntax and is intended to be used with the "module
 In addition, you will need to change any instances of "require" to "import" in your code. For example, instead of:
 
 ```javascript
-const chatGPT= require('chatgpt-io');
+const chatGPT = require("chatgpt-io");
 ```
+
 You will now use:
 
 ```javascript
-import chatGPT from 'chatgpt-io';
+import chatGPT from "chatgpt-io";
 ```
 
 ## API Reference
@@ -132,6 +133,23 @@ import chatGPT from "chatgpt-io";
   // specific conversation
   let response2 = await bot.ask("Hello?", "any-unique-string");
   console.log(response2);
+})();
+```
+
+## Event example(Alpha)
+
+```javascript
+import chatGPT from "chatgpt-io";
+
+(async function () {
+  let bot = new chatGPT("<SESSION_TOKEN>");
+  await bot.waitForReady();
+
+  bot.on("connect", async () => {
+    // default conversation
+    let response = await bot.ask("Hello?");
+    console.log(response);
+  });
 })();
 ```
 
