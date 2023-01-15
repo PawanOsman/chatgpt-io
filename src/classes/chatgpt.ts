@@ -205,7 +205,7 @@ class ChatGPT {
     this.ready = true;
   }
   public async disconnect() {
-    return await this.socket.disconnect();
+    return await this.socket.disconnect(true);
   }
 }
 
