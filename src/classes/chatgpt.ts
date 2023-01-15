@@ -35,7 +35,7 @@ class ChatGPT {
     var { reconnection, forceNew, logLevel } = options;
     this.log = new Log(logLevel ?? LogLevel.Info);
     this.ready = false;
-    this.socket = io(options.bypassNode, {
+    this.socket = io(options.bypassNode ?? "https://gpt.pawan.krd", {
       query: {
         client: "nodejs",
         version: "1.0.7",
