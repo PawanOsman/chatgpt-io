@@ -1,6 +1,6 @@
 {
   "name": "chatgpt-io",
-  "version": "1.0.7",
+  "version": "1.0.8-beta",
   "description": "ChatGPT Client API, Blazing Fast, without using browser",
   "main": "dist/index.js",
   "type": "module",
