@@ -1,9 +1,9 @@
 import { randomUUID } from "node:crypto";
 import { io } from "socket.io-client";
-import getCurrentTime from "src/helpers/getCurrentTime";
-import LogLevel from "src/enums/log-level";
-import Log from "./log";
-import ErrorType from "src/enums/error-type";
+import getCurrentTime from "../helpers/getCurrentTime.js";
+import LogLevel from "../enums/log-level.js";
+import Log from "./log.js";
+import ErrorType from "../enums/error-type.js";
 
 class ChatGPT {
   private ready: boolean;
@@ -13,11 +13,11 @@ class ChatGPT {
   private auth: any;
   private expires: number;
   private pauseTokenChecks: boolean;
-  private log: Log
-  public onReady?(): void
-  public onConnected?(): void
-  public onDisconnected?(): void
-  public onError?(errorType: ErrorType): void
+  private log: Log;
+  public onReady?(): void;
+  public onConnected?(): void;
+  public onDisconnected?(): void;
+  public onError?(errorType: ErrorType): void;
   constructor(
     sessionToken: string,
     bypassNode: string = "https://gpt.pawan.krd",
@@ -150,7 +150,7 @@ class ChatGPT {
       );
     });
 
-    if (data.error){
+    if (data.error) {
       this.log.error(data.error);
       this.processError(data.error);
       throw new Error(data.error);
@@ -163,13 +163,13 @@ class ChatGPT {
   }
 
   private processError(error: any): void {
-    if(!error) {
+    if (!error) {
       if (this.onError) this.onError(ErrorType.UnknownError);
       return;
-    };
-    if (typeof error !== 'string') {
-        if (this.onError) this.onError(ErrorType.UnknownError);
-        return;
+    }
+    if (typeof error !== "string") {
+      if (this.onError) this.onError(ErrorType.UnknownError);
+      return;
     }
     if (error.toLowerCase().includes("too many requests")) {
       if (this.onError) this.onError(ErrorType.AccountRateLimitExceeded);
