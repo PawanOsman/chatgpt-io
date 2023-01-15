@@ -20,21 +20,22 @@ class ChatGPT {
   public onError?(errorType: ErrorType): void;
   constructor(
     sessionToken: string,
-    bypassNode: string = "https://gpt.pawan.krd",
     options: {
       reconnection: boolean;
       forceNew: boolean;
       logLevel: LogLevel;
+      bypassNode: string;
     } = {
       reconnection: true,
       forceNew: false,
       logLevel: LogLevel.Info,
+      bypassNode: "https://gpt.pawan.krd",
     }
   ) {
     var { reconnection, forceNew, logLevel } = options;
     this.log = new Log(logLevel ?? LogLevel.Info);
     this.ready = false;
-    this.socket = io(bypassNode, {
+    this.socket = io(options.bypassNode, {
       query: {
         client: "nodejs",
         version: "1.0.7",
