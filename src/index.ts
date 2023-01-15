@@ -1,5 +1,8 @@
-export * from './classes/chatgpt';
-export * from './classes/log';
-export * from './enums/log-level';
-export * from './helpers/getCurrentTime';
-export * from './enums/error-type';
+import ChatGPT from "./classes/chatgpt";
+import Log from "./classes/log";
+import ErrorType from "./enums/error-type";
+import LogLevel from "./enums/log-level";
+import getCurrentTime from "./helpers/getCurrentTime";
+
+export default ChatGPT;
+export { getCurrentTime, ErrorType, Log, LogLevel };
