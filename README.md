@@ -143,13 +143,13 @@ import chatGPT from "chatgpt-io";
 
 (async function () {
   let bot = new chatGPT("<SESSION_TOKEN>");
-  await bot.waitForReady();
 
-  bot.on("connect", async () => {
+  bot.onConnected = async () => {
+    await bot.waitForReady();
     // default conversation
     let response = await bot.ask("Hello?");
     console.log(response);
-  });
+  };
 })();
 ```
 
