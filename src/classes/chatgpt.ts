@@ -204,8 +204,8 @@ class ChatGPT {
     this.expires = data.expires;
     this.ready = true;
   }
-  disconnect() {
-    this.socket.disconnect();
+  public async disconnect() {
+    return await this.socket.disconnect();
   }
 }
 
