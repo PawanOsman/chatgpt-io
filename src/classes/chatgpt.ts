@@ -37,8 +37,8 @@ class ChatGPT {
     this.socket = io(bypassNode, {
       query: {
         client: "nodejs",
-        version: "1.0.6",
-        versionCode: "106",
+        version: "1.0.7",
+        versionCode: "107",
       },
       transportOptions: {
         websocket: {
@@ -61,9 +61,11 @@ class ChatGPT {
     this.expires = Date.now();
     this.pauseTokenChecks = false;
     this.socket.on("connect", () => {
+      if (this.onConnected) this.onConnected();
       this.log.info("Connected to server");
     });
     this.socket.on("disconnect", () => {
+      if (this.onDisconnected) this.onDisconnected();
       this.log.info("Disconnected from server");
     });
     this.socket.on("serverMessage", (data: any) => {
@@ -126,6 +128,7 @@ class ChatGPT {
 
   public async waitForReady() {
     while (!this.ready) await this.wait(25);
+    if (this.onReady) this.onReady();
     this.log.info("Ready!");
   }
 
