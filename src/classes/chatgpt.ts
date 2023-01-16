@@ -35,11 +35,11 @@ class ChatGPT {
     var { reconnection, forceNew, logLevel } = options;
     this.log = new Log(logLevel ?? LogLevel.Info);
     this.ready = false;
-    this.socket = io(options.bypassNode, {
+    this.socket = io(options.bypassNode ?? "https://gpt.pawan.krd", {
       query: {
         client: "nodejs",
-        version: "1.0.7",
-        versionCode: "107",
+        version: "1.0.9",
+        versionCode: "109",
       },
       transportOptions: {
         websocket: {
@@ -204,6 +204,7 @@ class ChatGPT {
     this.expires = data.expires;
     this.ready = true;
   }
+
   public async disconnect() {
     return await this.socket.disconnect(true);
   }
