@@ -51,8 +51,8 @@ class ChatGPT {
     this.socket = io(options.bypassNode ?? "https://gpt.pawan.krd", {
       query: {
         client: "nodejs",
-        version: "1.0.9",
-        versionCode: "109",
+        version: "1.1.0",
+        versionCode: "110",
       },
       transportOptions: {
         websocket: {
