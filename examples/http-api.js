@@ -1,5 +1,5 @@
-const fastify = require("fastify");
-const chatGPT = require("../src/index");
+import fastify from "fastify";
+import chatGPT from "../dist/index.js";
 
 const app = fastify();
 
