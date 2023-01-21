@@ -4,17 +4,22 @@ import getCurrentTime from "../helpers/getCurrentTime.js";
 import LogLevel from "../enums/log-level.js";
 import Log from "./log.js";
 import ErrorType from "../enums/error-type.js";
+import fs from "fs";
 
 class ChatGPT {
+  private name: string = "default";
+  private path: string;
   private ready: boolean;
   private socket: any;
-  sessionToken: string;
-  conversations: any[];
-  private auth: any;
+  public sessionToken: string;
+  public conversations: any[];
+  public auth: any;
   private expires: number;
   private pauseTokenChecks: boolean;
   private log: Log;
   private proAccount: boolean = false;
+  private intervalId: NodeJS.Timeout;
+  private saveInterval: number = 1000 * 60; // 1 minute
   public onReady?(): void;
   public onConnected?(): void;
   public onDisconnected?(): void;
@@ -22,12 +27,14 @@ class ChatGPT {
   constructor(
     sessionToken: string,
     options: {
+      name: string;
       reconnection: boolean;
       forceNew: boolean;
       logLevel: LogLevel;
       bypassNode: string;
       proAccount: boolean;
     } = {
+      name: "default",
       reconnection: true,
       forceNew: false,
       logLevel: LogLevel.Info,
@@ -35,7 +42,9 @@ class ChatGPT {
       proAccount: false
     }
   ) {
-    var { reconnection, forceNew, logLevel, proAccount } = options;
+    var { reconnection, forceNew, logLevel, proAccount, name } = options;
+    this.name = name;
+    this.path = `./${this.name}-data.json`;
     this.proAccount = proAccount;
     this.log = new Log(logLevel ?? LogLevel.Info);
     this.ready = false;
@@ -64,7 +73,8 @@ class ChatGPT {
     this.conversations = [];
     this.auth = null;
     this.expires = Date.now();
-    this.pauseTokenChecks = false;
+    this.pauseTokenChecks = true;
+    this.load();
     this.socket.on("connect", () => {
       if (this.onConnected) this.onConnected();
       this.log.info("Connected to server");
@@ -92,7 +102,36 @@ class ChatGPT {
         return now - conversation.lastActive < 1800000; // 2 minutes in milliseconds
       });
     }, 60000);
+		this.intervalId = setInterval(() => {
+			this.save();
+		}, this.saveInterval);
   }
+
+	private async load() {
+    this.pauseTokenChecks = true;
+		if (!fs.existsSync(this.path)) {
+      await this.wait(1000);
+      this.pauseTokenChecks = false;
+      return;
+    }
+		let data = await fs.promises.readFile(this.path, "utf8");
+		let json = JSON.parse(data);
+    for (let key in json) {
+      this[key] = json[key];
+    }
+		await this.wait(1000);
+		this.pauseTokenChecks = false;
+	}
+
+	public async save() {
+		let result: any = {};
+		for (let key in this) {
+			if (this[key] instanceof Array || typeof this[key] === "string" || typeof this[key] === "number" || typeof this[key] === "boolean") {
+				result[key] = this[key];
+			}
+		}
+		await fs.promises.writeFile(this.path, JSON.stringify(result, null, 4));
+	}
 
   private addConversation(id: string) {
     let conversation = {
@@ -222,6 +261,8 @@ class ChatGPT {
   }
 
   public async disconnect() {
+		clearInterval(this.intervalId);
+		await this.save();
     return await this.socket.disconnect(true);
   }
 }
