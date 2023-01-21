@@ -89,6 +89,11 @@ class ChatGPT {
     setInterval(async () => {
       if (this.pauseTokenChecks) return;
       this.pauseTokenChecks = true;
+      if(!this.auth){
+        await this.getTokens();
+        this.pauseTokenChecks = false;
+        return;
+      }
       const now = Date.now();
       const offset = 2 * 60 * 1000;
       if (this.expires < now - offset || !this.auth) {
