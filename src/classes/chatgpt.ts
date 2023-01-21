@@ -44,7 +44,7 @@ class ChatGPT {
   ) {
     var { reconnection, forceNew, logLevel, proAccount, name } = options;
     this.name = name;
-    this.path = `./${this.name}-data.json`;
+    this.path = `./${this.name}-chatgpt-io.json`;
     this.proAccount = proAccount;
     this.log = new Log(logLevel ?? LogLevel.Info);
     this.ready = false;
