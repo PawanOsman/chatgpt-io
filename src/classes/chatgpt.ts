@@ -14,10 +14,11 @@ class ChatGPT {
   private expires: number;
   private pauseTokenChecks: boolean;
   private log: Log;
+  private proAccount: boolean = false;
   public onReady?(): void;
   public onConnected?(): void;
   public onDisconnected?(): void;
-  public onError?(errorType: ErrorType): void;
+  public onError?(errorType: ErrorType, prompt: string, conversationId: string): void;
   constructor(
     sessionToken: string,
     options: {
@@ -25,14 +26,17 @@ class ChatGPT {
       forceNew: boolean;
       logLevel: LogLevel;
       bypassNode: string;
+      proAccount: boolean;
     } = {
       reconnection: true,
       forceNew: false,
       logLevel: LogLevel.Info,
       bypassNode: "https://gpt.pawan.krd",
+      proAccount: false
     }
   ) {
-    var { reconnection, forceNew, logLevel } = options;
+    var { reconnection, forceNew, logLevel, proAccount } = options;
+    this.proAccount = proAccount;
     this.log = new Log(logLevel ?? LogLevel.Info);
     this.ready = false;
     this.socket = io(options.bypassNode ?? "https://gpt.pawan.krd", {
@@ -138,7 +142,7 @@ class ChatGPT {
     let conversation = this.getConversationById(id);
     let data: any = await new Promise((resolve) => {
       this.socket.emit(
-        "askQuestion",
+        this.proAccount ? "askQuestionPro" : "askQuestion",
         {
           prompt: prompt,
           parentId: conversation.parentId,
@@ -153,7 +157,7 @@ class ChatGPT {
 
     if (data.error) {
       this.log.error(data.error);
-      this.processError(data.error);
+      this.processError(data.error, prompt, id);
       throw new Error(data.error);
     }
 
@@ -163,19 +167,31 @@ class ChatGPT {
     return data.answer;
   }
 
-  private processError(error: any): void {
+  private processError(error: any, prompt: string = null, conversationId: string = null): void {
+    let errorType = ErrorType.UnknownError;
     if (!error) {
-      if (this.onError) this.onError(ErrorType.UnknownError);
-      return;
+      errorType = ErrorType.UnknownError;
     }
     if (typeof error !== "string") {
-      if (this.onError) this.onError(ErrorType.UnknownError);
-      return;
+      errorType = ErrorType.UnknownError;
     }
     if (error.toLowerCase().includes("too many requests")) {
-      if (this.onError) this.onError(ErrorType.AccountRateLimitExceeded);
+      errorType = ErrorType.AccountRateLimitExceeded;
     }
-    // TODO: Add more error types
+    if (error.toLowerCase().includes("try refreshing your browser")) {
+      errorType = ErrorType.UnknownError;
+    }
+    if (error.toLowerCase().includes("too long")) {
+      errorType = ErrorType.MessageTooLong;
+    }
+    if (error.toLowerCase().includes("one message at a time")) {
+      errorType = ErrorType.AnotherMessageInProgress;
+    }
+    if (error.toLowerCase().includes("expired")) {
+      errorType = ErrorType.SessionTokenExpired;
+    }
+    
+    if (this.onError) this.onError(errorType, prompt, conversationId);
   }
 
   private validateToken(token: string) {
