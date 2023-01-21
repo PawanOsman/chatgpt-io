@@ -156,6 +156,7 @@ class ChatGPT {
       lastActive: Date.now(),
     };
     this.conversations.push(conversation);
+    this.save();
     return conversation;
   }
 
