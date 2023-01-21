@@ -124,6 +124,7 @@ class ChatGPT {
       this[key] = json[key];
     }
 		await this.wait(1000);
+    if(this.auth) this.ready = true;
 		this.pauseTokenChecks = false;
 	}
 
