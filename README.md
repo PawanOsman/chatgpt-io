@@ -110,7 +110,7 @@ Creates a new instance of the `ChatGPT` class.
 
 ```javascript
 options = {
-  name: string, // default = "default"
+  name: string; // default = "default"
   reconnection: boolean; // default = true
   forceNew: boolean; // default = false
   logLevel: LogLevel; // default = Info
