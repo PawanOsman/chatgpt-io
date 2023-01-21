@@ -105,6 +105,10 @@ class ChatGPT {
 		this.intervalId = setInterval(() => {
 			this.save();
 		}, this.saveInterval);
+    process.on('beforeExit', async () => {
+      clearInterval(this.intervalId);
+      if(this.ready) await this.save();
+    });
   }
 
 	private async load() {
@@ -126,6 +130,11 @@ class ChatGPT {
 	public async save() {
 		let result: any = {};
 		for (let key in this) {
+      if (key === "pauseTokenChecks") continue;
+      if (key === "ready") continue;
+      if (key === "name") continue;
+      if (key === "path") continue;
+      if (key === "saveInterval") continue;
 			if (this[key] instanceof Array || typeof this[key] === "string" || typeof this[key] === "number" || typeof this[key] === "boolean") {
 				result[key] = this[key];
 			}
@@ -258,6 +267,7 @@ class ChatGPT {
     this.auth = data.auth;
     this.expires = data.expires;
     this.ready = true;
+    await this.save();
   }
 
   public async disconnect() {
