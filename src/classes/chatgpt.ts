@@ -23,7 +23,11 @@ class ChatGPT {
   public onReady?(): void;
   public onConnected?(): void;
   public onDisconnected?(): void;
-  public onError?(errorType: ErrorType, prompt: string, conversationId: string): void;
+  public onError?(
+    errorType: ErrorType,
+    prompt: string,
+    conversationId: string
+  ): void;
   constructor(
     sessionToken: string,
     options: {
@@ -33,18 +37,21 @@ class ChatGPT {
       logLevel: LogLevel;
       bypassNode: string;
       proAccount: boolean;
+      configsFolder: string;
     } = {
       name: "default",
       reconnection: true,
       forceNew: false,
       logLevel: LogLevel.Info,
       bypassNode: "https://gpt.pawan.krd",
-      proAccount: false
+      proAccount: false,
+      configsFolder: "configs",
     }
   ) {
-    var { reconnection, forceNew, logLevel, proAccount, name } = options;
+    var { reconnection, forceNew, logLevel, proAccount, name, configsFolder } =
+      options;
     this.name = name;
-    this.path = `./${this.name}-chatgpt-io.json`;
+    this.path = `./${configsFolder}/${this.name}-chatgpt-io.json`;
     this.proAccount = proAccount;
     this.log = new Log(logLevel ?? LogLevel.Info);
     this.ready = false;
@@ -89,7 +96,7 @@ class ChatGPT {
     setInterval(async () => {
       if (this.pauseTokenChecks) return;
       this.pauseTokenChecks = true;
-      if(!this.auth){
+      if (!this.auth) {
         await this.getTokens();
         this.pauseTokenChecks = false;
         return;
@@ -107,46 +114,51 @@ class ChatGPT {
         return now - conversation.lastActive < 1800000; // 2 minutes in milliseconds
       });
     }, 60000);
-		this.intervalId = setInterval(() => {
-			this.save();
-		}, this.saveInterval);
-    process.on('beforeExit', async () => {
+    this.intervalId = setInterval(() => {
+      this.save();
+    }, this.saveInterval);
+    process.on("beforeExit", async () => {
       clearInterval(this.intervalId);
-      if(this.ready) await this.save();
+      if (this.ready) await this.save();
     });
   }
 
-	private async load() {
+  private async load() {
     this.pauseTokenChecks = true;
-		if (!fs.existsSync(this.path)) {
+    if (!fs.existsSync(this.path)) {
       await this.wait(1000);
       this.pauseTokenChecks = false;
       return;
     }
-		let data = await fs.promises.readFile(this.path, "utf8");
-		let json = JSON.parse(data);
+    let data = await fs.promises.readFile(this.path, "utf8");
+    let json = JSON.parse(data);
     for (let key in json) {
       this[key] = json[key];
     }
-		await this.wait(1000);
-    if(this.auth) this.ready = true;
-		this.pauseTokenChecks = false;
-	}
+    await this.wait(1000);
+    if (this.auth) this.ready = true;
+    this.pauseTokenChecks = false;
+  }
 
-	public async save() {
-		let result: any = {};
-		for (let key in this) {
+  public async save() {
+    let result: any = {};
+    for (let key in this) {
       if (key === "pauseTokenChecks") continue;
       if (key === "ready") continue;
       if (key === "name") continue;
       if (key === "path") continue;
       if (key === "saveInterval") continue;
-			if (this[key] instanceof Array || typeof this[key] === "string" || typeof this[key] === "number" || typeof this[key] === "boolean") {
-				result[key] = this[key];
-			}
-		}
-		await fs.promises.writeFile(this.path, JSON.stringify(result, null, 4));
-	}
+      if (
+        this[key] instanceof Array ||
+        typeof this[key] === "string" ||
+        typeof this[key] === "number" ||
+        typeof this[key] === "boolean"
+      ) {
+        result[key] = this[key];
+      }
+    }
+    await fs.promises.writeFile(this.path, JSON.stringify(result, null, 4));
+  }
 
   private addConversation(id: string) {
     let conversation = {
@@ -222,7 +234,11 @@ class ChatGPT {
     return data.answer;
   }
 
-  private processError(error: any, prompt: string = null, conversationId: string = null): void {
+  private processError(
+    error: any,
+    prompt: string = null,
+    conversationId: string = null
+  ): void {
     let errorType = ErrorType.UnknownError;
     if (!error) {
       errorType = ErrorType.UnknownError;
@@ -245,7 +261,7 @@ class ChatGPT {
     if (error.toLowerCase().includes("expired")) {
       errorType = ErrorType.SessionTokenExpired;
     }
-    
+
     if (this.onError) this.onError(errorType, prompt, conversationId);
   }
 
@@ -278,8 +294,8 @@ class ChatGPT {
   }
 
   public async disconnect() {
-		clearInterval(this.intervalId);
-		await this.save();
+    clearInterval(this.intervalId);
+    await this.save();
     return await this.socket.disconnect(true);
   }
 }
