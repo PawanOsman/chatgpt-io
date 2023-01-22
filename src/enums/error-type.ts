@@ -1,10 +1,10 @@
 enum ErrorType {
-    ApiServerError = 0,
-    OpenAIServerError = 1,
-    AccountRateLimitExceeded = 2,
-    AnotherMessageInProgress = 3,
-    SessionTokenExpired = 4,
-    UnknownError = 5,
+	Timeout = 1,
+	AccountRateLimitExceeded = 2,
+	AnotherMessageInProgress = 3,
+	SessionTokenExpired = 4,
+	MessageTooLong = 5,
+	UnknownError = 6,
 }
 
 export default ErrorType;

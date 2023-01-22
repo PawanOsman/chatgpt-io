@@ -4,42 +4,55 @@ import getCurrentTime from "../helpers/getCurrentTime.js";
 import LogLevel from "../enums/log-level.js";
 import Log from "./log.js";
 import ErrorType from "../enums/error-type.js";
+import fs from "fs";
 
 class ChatGPT {
+  private name: string = "default";
+  private path: string;
   private ready: boolean;
   private socket: any;
-  sessionToken: string;
-  conversations: any[];
-  private auth: any;
+  public sessionToken: string;
+  public conversations: any[];
+  public auth: any;
   private expires: number;
   private pauseTokenChecks: boolean;
   private log: Log;
+  private proAccount: boolean = false;
+  private intervalId: NodeJS.Timeout;
+  private saveInterval: number = 1000 * 60; // 1 minute
   public onReady?(): void;
   public onConnected?(): void;
   public onDisconnected?(): void;
-  public onError?(errorType: ErrorType): void;
+  public onError?(errorType: ErrorType, prompt: string, conversationId: string): void;
   constructor(
     sessionToken: string,
     options: {
+      name: string;
       reconnection: boolean;
       forceNew: boolean;
       logLevel: LogLevel;
       bypassNode: string;
+      proAccount: boolean;
     } = {
+      name: "default",
       reconnection: true,
       forceNew: false,
       logLevel: LogLevel.Info,
       bypassNode: "https://gpt.pawan.krd",
+      proAccount: false
     }
   ) {
-    var { reconnection, forceNew, logLevel } = options;
+    var { reconnection, forceNew, logLevel, proAccount, name } = options;
+    this.name = name;
+    this.path = `./${this.name}-chatgpt-io.json`;
+    this.proAccount = proAccount;
     this.log = new Log(logLevel ?? LogLevel.Info);
     this.ready = false;
     this.socket = io(options.bypassNode ?? "https://gpt.pawan.krd", {
       query: {
         client: "nodejs",
-        version: "1.0.9",
-        versionCode: "109",
+        version: "1.1.0",
+        versionCode: "110",
       },
       transportOptions: {
         websocket: {
@@ -60,7 +73,8 @@ class ChatGPT {
     this.conversations = [];
     this.auth = null;
     this.expires = Date.now();
-    this.pauseTokenChecks = false;
+    this.pauseTokenChecks = true;
+    this.load();
     this.socket.on("connect", () => {
       if (this.onConnected) this.onConnected();
       this.log.info("Connected to server");
@@ -75,6 +89,11 @@ class ChatGPT {
     setInterval(async () => {
       if (this.pauseTokenChecks) return;
       this.pauseTokenChecks = true;
+      if(!this.auth){
+        await this.getTokens();
+        this.pauseTokenChecks = false;
+        return;
+      }
       const now = Date.now();
       const offset = 2 * 60 * 1000;
       if (this.expires < now - offset || !this.auth) {
@@ -88,7 +107,46 @@ class ChatGPT {
         return now - conversation.lastActive < 1800000; // 2 minutes in milliseconds
       });
     }, 60000);
+		this.intervalId = setInterval(() => {
+			this.save();
+		}, this.saveInterval);
+    process.on('beforeExit', async () => {
+      clearInterval(this.intervalId);
+      if(this.ready) await this.save();
+    });
   }
+
+	private async load() {
+    this.pauseTokenChecks = true;
+		if (!fs.existsSync(this.path)) {
+      await this.wait(1000);
+      this.pauseTokenChecks = false;
+      return;
+    }
+		let data = await fs.promises.readFile(this.path, "utf8");
+		let json = JSON.parse(data);
+    for (let key in json) {
+      this[key] = json[key];
+    }
+		await this.wait(1000);
+    if(this.auth) this.ready = true;
+		this.pauseTokenChecks = false;
+	}
+
+	public async save() {
+		let result: any = {};
+		for (let key in this) {
+      if (key === "pauseTokenChecks") continue;
+      if (key === "ready") continue;
+      if (key === "name") continue;
+      if (key === "path") continue;
+      if (key === "saveInterval") continue;
+			if (this[key] instanceof Array || typeof this[key] === "string" || typeof this[key] === "number" || typeof this[key] === "boolean") {
+				result[key] = this[key];
+			}
+		}
+		await fs.promises.writeFile(this.path, JSON.stringify(result, null, 4));
+	}
 
   private addConversation(id: string) {
     let conversation = {
@@ -98,6 +156,7 @@ class ChatGPT {
       lastActive: Date.now(),
     };
     this.conversations.push(conversation);
+    this.save();
     return conversation;
   }
 
@@ -138,7 +197,7 @@ class ChatGPT {
     let conversation = this.getConversationById(id);
     let data: any = await new Promise((resolve) => {
       this.socket.emit(
-        "askQuestion",
+        this.proAccount ? "askQuestionPro" : "askQuestion",
         {
           prompt: prompt,
           parentId: conversation.parentId,
@@ -153,7 +212,7 @@ class ChatGPT {
 
     if (data.error) {
       this.log.error(data.error);
-      this.processError(data.error);
+      this.processError(data.error, prompt, id);
       throw new Error(data.error);
     }
 
@@ -163,19 +222,31 @@ class ChatGPT {
     return data.answer;
   }
 
-  private processError(error: any): void {
+  private processError(error: any, prompt: string = null, conversationId: string = null): void {
+    let errorType = ErrorType.UnknownError;
     if (!error) {
-      if (this.onError) this.onError(ErrorType.UnknownError);
-      return;
+      errorType = ErrorType.UnknownError;
     }
     if (typeof error !== "string") {
-      if (this.onError) this.onError(ErrorType.UnknownError);
-      return;
+      errorType = ErrorType.UnknownError;
     }
     if (error.toLowerCase().includes("too many requests")) {
-      if (this.onError) this.onError(ErrorType.AccountRateLimitExceeded);
+      errorType = ErrorType.AccountRateLimitExceeded;
     }
-    // TODO: Add more error types
+    if (error.toLowerCase().includes("try refreshing your browser")) {
+      errorType = ErrorType.UnknownError;
+    }
+    if (error.toLowerCase().includes("too long")) {
+      errorType = ErrorType.MessageTooLong;
+    }
+    if (error.toLowerCase().includes("one message at a time")) {
+      errorType = ErrorType.AnotherMessageInProgress;
+    }
+    if (error.toLowerCase().includes("expired")) {
+      errorType = ErrorType.SessionTokenExpired;
+    }
+    
+    if (this.onError) this.onError(errorType, prompt, conversationId);
   }
 
   private validateToken(token: string) {
@@ -203,9 +274,12 @@ class ChatGPT {
     this.auth = data.auth;
     this.expires = data.expires;
     this.ready = true;
+    await this.save();
   }
 
   public async disconnect() {
+		clearInterval(this.intervalId);
+		await this.save();
     return await this.socket.disconnect(true);
   }
 }

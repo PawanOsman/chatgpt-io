@@ -1,6 +1,6 @@
-# Update 30-DEC-2022
+# Update 21-JAN-2023
 
-## We have introduced a new method that utilizes a socket for faster performance without the need for a browser anymore. [[C# Version](https://github.com/PawanOsman/ChatGPT.Net)][[Python Version](https://github.com/PawanOsman/PyGPT)]
+## We have implemented support for pro accounts. [[C# Version](https://github.com/PawanOsman/ChatGPT.Net)][[Python Version](https://github.com/PawanOsman/PyGPT)]
 
 ## For support join [[Discord](https://discord.pawan.krd)]
 
@@ -48,6 +48,11 @@ To use the package, require it in your code and create a new instance of the `ch
 import chatGPT from "chatgpt-io";
 
 let bot = new chatGPT("<SESSION_TOKEN>");
+
+// or if your accounts is pro
+let bot = new chatGPT("<SESSION_TOKEN>", {
+    proAccount: true
+});
 ```
 
 Before making any requests to the API, you should wait for the `bot` instance to be ready by calling the `waitForReady` method. This ensures that the connection to the API has been established and any necessary setup has been completed.
@@ -94,13 +99,35 @@ import chatGPT from "chatgpt-io";
 
 ### `ChatGPT` class
 
-#### `constructor(sessionToken: string)`
+#### `constructor(sessionToken: string, options: object)`
 
 Creates a new instance of the `ChatGPT` class.
 
 ##### Parameters
 
 - `sessionToken` (string): Your ChatGPT API session token.
+- `options` (object):
+
+```javascript
+options = {
+  name: string; // default = "default"
+  reconnection: boolean; // default = true
+  forceNew: boolean; // default = false
+  logLevel: LogLevel; // default = Info
+  bypassNode: string; // default = "https://gpt.pawan.krd"
+  proAccount: boolean; // default = false
+}
+```
+```javascript
+LogLevel = {
+  Trace = 0,
+  Debug = 1,
+  Info = 2,
+  Warning = 3,
+  Error = 4
+}
+```
+
 
 #### `waitForReady(): Promise<void>`
 
