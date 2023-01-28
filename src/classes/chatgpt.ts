@@ -56,7 +56,7 @@ class ChatGPT {
     var { reconnection, forceNew, logLevel, proAccount, name, configsDir, saveInterval } =
       options;
     if (saveInterval) this.saveInterval = saveInterval;
-    this.name = name;
+    this.name = name ?? "default";
     this.path = `./${configsDir ?? "configs"}/${this.name}-chatgpt-io.json`;
     this.proAccount = proAccount;
     this.log = new Log(logLevel ?? LogLevel.Info);
