@@ -166,7 +166,7 @@ class ChatGPT {
       this[key] = json[key];
     }
     await this.wait(1000);
-    if (newSignature !== json["signiture"]) {
+    if (newSignature !== json["signature"]) {
       this.log.warn("Session token changed, re-authenticating the new session token...");
       this.auth = null;
       this.sessionToken = newSessionToken;
@@ -178,7 +178,7 @@ class ChatGPT {
   public async save() {
     let result: any = {};
     let [newSignature, newSessionToken] = this.getSignature();
-    result["signiture"] = newSignature;
+    result["signature"] = newSignature;
     for (let key in this) {
       if (key === "pauseTokenChecks") continue;
       if (key === "ready") continue;
@@ -247,7 +247,7 @@ class ChatGPT {
     this.log.info("Ready!");
   }
 
-  public async ask(prompt: string, id: string = "default", parentId?: string) {
+  public async send(prompt: string, id: string = "default", parentId?: string){
     if (!this.auth || !this.validateToken(this.auth)) await this.getTokens();
     let conversation = this.getConversationById(id, parentId);
     let data: any = await new Promise((resolve) => {
@@ -275,7 +275,12 @@ class ChatGPT {
       conversation.conversationId = data.conversationId;
     }
 
-    return data.answer, data.messageId, data.conversationId;
+    return data;
+  }
+
+  public async ask(prompt: string, id: string = "default", parentId?: string) {
+    let data = await this.send(prompt, id, parentId);
+    return data.answer;
   }
 
   private processError(
