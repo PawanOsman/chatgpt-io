@@ -5,6 +5,7 @@ import LogLevel from "../enums/log-level.js";
 import Log from "./log.js";
 import ErrorType from "../enums/error-type.js";
 import fs from "fs";
+import path from "path";
 
 class ChatGPT {
   private name: string = "default";
@@ -26,18 +27,20 @@ class ChatGPT {
   public onError?(
     errorType: ErrorType,
     prompt: string,
-    conversationId: string
+    conversationId: string,
+    parentId: string
   ): void;
+  private configMovesDone: boolean = false;
   constructor(
     sessionToken: string,
     options: {
-      name: string;
-      reconnection: boolean;
-      forceNew: boolean;
-      logLevel: LogLevel;
-      bypassNode: string;
-      proAccount: boolean;
-      configsFolder: string;
+      name?: string;
+      reconnection?: boolean;
+      forceNew?: boolean;
+      logLevel?: LogLevel;
+      bypassNode?: string;
+      proAccount?: boolean;
+      configsDir?: string;
     } = {
       name: "default",
       reconnection: true,
@@ -45,13 +48,13 @@ class ChatGPT {
       logLevel: LogLevel.Info,
       bypassNode: "https://gpt.pawan.krd",
       proAccount: false,
-      configsFolder: "configs",
+      configsDir: "configs",
     }
   ) {
-    var { reconnection, forceNew, logLevel, proAccount, name, configsFolder } =
+    var { reconnection, forceNew, logLevel, proAccount, name, configsDir } =
       options;
     this.name = name;
-    this.path = `./${configsFolder}/${this.name}-chatgpt-io.json`;
+    this.path = `./${configsDir ?? "configs"}/${this.name}-chatgpt-io.json`;
     this.proAccount = proAccount;
     this.log = new Log(logLevel ?? LogLevel.Info);
     this.ready = false;
@@ -81,6 +84,19 @@ class ChatGPT {
     this.auth = null;
     this.expires = Date.now();
     this.pauseTokenChecks = true;
+    fs.readdir('./', (err, files) => {
+      if (err) throw err;
+      let targetDir = `./${configsDir ?? "configs"}`;
+      files.forEach(file => {
+        if (file.endsWith('-chatgpt-io.json')) {
+          fs.rename(file, path.join(targetDir, file), err => {
+            if (err) throw err;
+            console.log(`Moved ${file} to ${targetDir}`);
+          });
+        }
+      });
+      this.configMovesDone = true;
+    });
     this.load();
     this.socket.on("connect", () => {
       if (this.onConnected) this.onConnected();
@@ -124,7 +140,15 @@ class ChatGPT {
   }
 
   private async load() {
+    while (!this.configMovesDone) {
+      await this.wait(25);
+    }
     this.pauseTokenChecks = true;
+    if (!fs.existsSync("./configs")) {
+      await this.wait(1000);
+      this.pauseTokenChecks = false;
+      return;
+    }
     if (!fs.existsSync(this.path)) {
       await this.wait(1000);
       this.pauseTokenChecks = false;
@@ -160,11 +184,16 @@ class ChatGPT {
     await fs.promises.writeFile(this.path, JSON.stringify(result, null, 4));
   }
 
-  private addConversation(id: string) {
+  private isUUID(str: string) {
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    return uuidRegex.test(str);
+  }
+
+  private addConversation(id: string, parentId?: string) {
     let conversation = {
       id: id,
-      conversationId: null,
-      parentId: randomUUID(),
+      conversationId: this.isUUID(id) ? id : null,
+      parentId: parentId ?? randomUUID(),
       lastActive: Date.now(),
     };
     this.conversations.push(conversation);
@@ -172,12 +201,12 @@ class ChatGPT {
     return conversation;
   }
 
-  private getConversationById(id: string) {
+  private getConversationById(id: string, parentId?: string) {
     let conversation = this.conversations.find(
       (conversation) => conversation.id === id
     );
     if (!conversation) {
-      conversation = this.addConversation(id);
+      conversation = this.addConversation(id, parentId);
     } else {
       conversation.lastActive = Date.now();
     }
@@ -204,9 +233,9 @@ class ChatGPT {
     this.log.info("Ready!");
   }
 
-  public async ask(prompt: string, id: string = "default") {
+  public async ask(prompt: string, id: string = "default", parentId?: string) {
     if (!this.auth || !this.validateToken(this.auth)) await this.getTokens();
-    let conversation = this.getConversationById(id);
+    let conversation = this.getConversationById(id, parentId);
     let data: any = await new Promise((resolve) => {
       this.socket.emit(
         this.proAccount ? "askQuestionPro" : "askQuestion",
@@ -224,20 +253,22 @@ class ChatGPT {
 
     if (data.error) {
       this.log.error(data.error);
-      this.processError(data.error, prompt, id);
+      this.processError(data.error, prompt, id, parentId);
       throw new Error(data.error);
     }
+    else{
+      conversation.parentId = data.messageId;
+      conversation.conversationId = data.conversationId;
+    }
 
-    conversation.parentId = data.messageId;
-    conversation.conversationId = data.conversationId;
-
-    return data.answer;
+    return data.answer, data.messageId, data.conversationId;
   }
 
   private processError(
     error: any,
     prompt: string = null,
-    conversationId: string = null
+    conversationId: string = null,
+    parentId: string = null
   ): void {
     let errorType = ErrorType.UnknownError;
     if (!error) {
@@ -262,7 +293,7 @@ class ChatGPT {
       errorType = ErrorType.SessionTokenExpired;
     }
 
-    if (this.onError) this.onError(errorType, prompt, conversationId);
+    if (this.onError) this.onError(errorType, prompt, conversationId, parentId);
   }
 
   private validateToken(token: string) {
