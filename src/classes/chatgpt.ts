@@ -166,6 +166,7 @@ class ChatGPT {
     let data = await fs.promises.readFile(this.path, "utf8");
     let json = JSON.parse(data);
     for (let key in json) {
+      if (key === "signature") continue;
       this[key] = json[key];
     }
     await this.wait(1000);
