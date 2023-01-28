@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto";
+import { randomUUID, createHash } from "node:crypto";
 import { io } from "socket.io-client";
 import getCurrentTime from "../helpers/getCurrentTime.js";
 import LogLevel from "../enums/log-level.js";
@@ -140,33 +140,41 @@ class ChatGPT {
     });
   }
 
+  private async getSignature(): Promise<string> {
+    let hash = createHash("md5");
+    hash.update(this.sessionToken);
+    return hash.digest("hex"), this.sessionToken.toString();
+  }
+
   private async load() {
     while (!this.configMovesDone) {
       await this.wait(25);
     }
     this.pauseTokenChecks = true;
-    if (!fs.existsSync("./configs")) {
-      await this.wait(1000);
-      this.pauseTokenChecks = false;
-      return;
-    }
     if (!fs.existsSync(this.path)) {
       await this.wait(1000);
       this.pauseTokenChecks = false;
       return;
     }
+    let newSignature: string, newSessionToken: string = await this.getSignature();
     let data = await fs.promises.readFile(this.path, "utf8");
     let json = JSON.parse(data);
     for (let key in json) {
       this[key] = json[key];
     }
     await this.wait(1000);
+    if (newSignature !== json["signiture"]) {
+      this.log.warn("Session token changed, re-authenticating the new session token...");
+      this.auth = null;
+      this.sessionToken = newSessionToken;
+    }
     if (this.auth) this.ready = true;
     this.pauseTokenChecks = false;
   }
 
   public async save() {
     let result: any = {};
+    result["signiture"] = await this.getSignature();
     for (let key in this) {
       if (key === "pauseTokenChecks") continue;
       if (key === "ready") continue;
