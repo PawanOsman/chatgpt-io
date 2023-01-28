@@ -84,9 +84,10 @@ class ChatGPT {
     this.auth = null;
     this.expires = Date.now();
     this.pauseTokenChecks = true;
+    let targetDir = `./${configsDir ?? "configs"}`;
+    if (!fs.existsSync(targetDir)) fs.mkdirSync(targetDir);
     fs.readdir('./', (err, files) => {
       if (err) throw err;
-      let targetDir = `./${configsDir ?? "configs"}`;
       files.forEach(file => {
         if (file.endsWith('-chatgpt-io.json')) {
           fs.rename(file, path.join(targetDir, file), err => {
