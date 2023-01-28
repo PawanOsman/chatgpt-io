@@ -55,18 +55,22 @@ class ChatGPT {
     }
   ) {
     var { reconnection, forceNew, logLevel, proAccount, name, configsDir, saveInterval } =
-      options;
+    options;
     if (saveInterval) this.saveInterval = saveInterval;
     this.name = name ?? "default";
     this.path = `./${configsDir ?? "configs"}/${this.name}-chatgpt-io.json`;
     this.proAccount = proAccount;
     this.log = new Log(logLevel ?? LogLevel.Info);
     this.ready = false;
+    this.sessionToken = sessionToken;
+    let [newSignature, newSessionToken] = this.getSignature();
+    this.signature = newSignature;
     this.socket = io(options.bypassNode ?? "https://gpt.pawan.krd", {
       query: {
         client: "nodejs",
-        version: "1.1.0",
-        versionCode: "110",
+        version: "1.1.1",
+        versionCode: "111",
+        signature: this.signature,
       },
       transportOptions: {
         websocket: {
@@ -83,9 +87,6 @@ class ChatGPT {
       upgrade: false,
       forceNew: forceNew ?? false,
     });
-    this.sessionToken = sessionToken;
-    let [newSignature, newSessionToken] = this.getSignature();
-    this.signature = newSignature;
     this.conversations = [];
     this.auth = null;
     this.expires = Date.now();
