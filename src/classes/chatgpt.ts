@@ -41,6 +41,7 @@ class ChatGPT {
       bypassNode?: string;
       proAccount?: boolean;
       configsDir?: string;
+      saveInterval?: number;
     } = {
       name: "default",
       reconnection: true,
@@ -49,10 +50,12 @@ class ChatGPT {
       bypassNode: "https://gpt.pawan.krd",
       proAccount: false,
       configsDir: "configs",
+      saveInterval: 1000 * 60,
     }
   ) {
-    var { reconnection, forceNew, logLevel, proAccount, name, configsDir } =
+    var { reconnection, forceNew, logLevel, proAccount, name, configsDir, saveInterval } =
       options;
+    if (saveInterval) this.saveInterval = saveInterval;
     this.name = name;
     this.path = `./${configsDir ?? "configs"}/${this.name}-chatgpt-io.json`;
     this.proAccount = proAccount;
@@ -140,10 +143,10 @@ class ChatGPT {
     });
   }
 
-  private async getSignature(): Promise<string> {
+  private getSignature(): [string, string]{
     let hash = createHash("md5");
     hash.update(this.sessionToken);
-    return hash.digest("hex"), this.sessionToken.toString();
+    return [hash.digest("hex"), this.sessionToken.toString()];
   }
 
   private async load() {
@@ -156,7 +159,7 @@ class ChatGPT {
       this.pauseTokenChecks = false;
       return;
     }
-    let newSignature: string, newSessionToken: string = await this.getSignature();
+    let [newSignature, newSessionToken] = this.getSignature();
     let data = await fs.promises.readFile(this.path, "utf8");
     let json = JSON.parse(data);
     for (let key in json) {
@@ -174,13 +177,15 @@ class ChatGPT {
 
   public async save() {
     let result: any = {};
-    result["signiture"] = await this.getSignature();
+    let [newSignature, newSessionToken] = this.getSignature();
+    result["signiture"] = newSignature;
     for (let key in this) {
       if (key === "pauseTokenChecks") continue;
       if (key === "ready") continue;
       if (key === "name") continue;
       if (key === "path") continue;
       if (key === "saveInterval") continue;
+      if (key === "configMovesDone") continue;
       if (
         this[key] instanceof Array ||
         typeof this[key] === "string" ||
