@@ -18,6 +18,7 @@ class ChatGPT {
   private expires: number;
   private pauseTokenChecks: boolean;
   private log: Log;
+  private signature: string;
   private proAccount: boolean = false;
   private intervalId: NodeJS.Timeout;
   private saveInterval: number = 1000 * 60; // 1 minute
@@ -83,6 +84,8 @@ class ChatGPT {
       forceNew: forceNew ?? false,
     });
     this.sessionToken = sessionToken;
+    let [newSignature, newSessionToken] = this.getSignature();
+    this.signature = newSignature;
     this.conversations = [];
     this.auth = null;
     this.expires = Date.now();
@@ -177,8 +180,6 @@ class ChatGPT {
 
   public async save() {
     let result: any = {};
-    let [newSignature, newSessionToken] = this.getSignature();
-    result["signature"] = newSignature;
     for (let key in this) {
       if (key === "pauseTokenChecks") continue;
       if (key === "ready") continue;

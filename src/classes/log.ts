@@ -19,7 +19,7 @@ class Log {
   trace(message: any) {
     if (this.isArray(message) || this.isObject(message))
       message = JSON.stringify(message);
-    if (this.logLevel >= LogLevel.Trace) {
+    if (this.logLevel <= LogLevel.Trace) {
       console.log(`[TRACE] ${getCurrentTime()} ${message}`);
     }
   }
@@ -27,7 +27,7 @@ class Log {
   debug(message: any) {
     if (this.isArray(message) || this.isObject(message))
       message = JSON.stringify(message);
-    if (this.logLevel >= LogLevel.Debug) {
+    if (this.logLevel <= LogLevel.Debug) {
       console.log(`[DEBUG] ${getCurrentTime()} ${message}`);
     }
   }
@@ -35,7 +35,7 @@ class Log {
   info(message: any) {
     if (this.isArray(message) || this.isObject(message))
       message = JSON.stringify(message);
-    if (this.logLevel >= LogLevel.Info) {
+    if (this.logLevel <= LogLevel.Info) {
       console.log(`[INFO] ${getCurrentTime()} ${message}`);
     }
   }
@@ -43,7 +43,7 @@ class Log {
   warn(message: any) {
     if (this.isArray(message) || this.isObject(message))
       message = JSON.stringify(message);
-    if (this.logLevel >= LogLevel.Warning) {
+    if (this.logLevel <= LogLevel.Warning) {
       console.log(`[WARN] ${getCurrentTime()} ${message}`);
     }
   }
@@ -51,7 +51,7 @@ class Log {
   error(message: any) {
     if (this.isArray(message) || this.isObject(message))
       message = JSON.stringify(message);
-    if (this.logLevel >= LogLevel.Error) {
+    if (this.logLevel <= LogLevel.Error) {
       console.log(`[ERROR] ${getCurrentTime()} ${message}`);
     }
   }
