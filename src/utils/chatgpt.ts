@@ -98,7 +98,8 @@ async function sendMessage(callback: (arg0: string) => void, bypassNode: string,
 					callback(text.replace(dataToReturnString, ""));
 					dataToReturnString = text;
 				} catch (error) {
-					console.error("Could not JSON parse stream message", message, error);
+					throw new  Error("Could not JSON parse stream message", message, error)
+					//console.error("Could not JSON parse stream message", message, error);
 				}
 			}
 		}
