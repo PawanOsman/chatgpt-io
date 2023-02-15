@@ -1,7 +1,5 @@
 # Update 21-JAN-2023
 
-## We have implemented support for pro accounts. [[C# Version](https://github.com/PawanOsman/ChatGPT.Net)][[Python Version](https://github.com/PawanOsman/PyGPT)]
-
 ## For support join [[Discord](https://discord.pawan.krd)]
 
 # chatgpt-io - Unofficial API client for ChatGPT [[Discord](https://discord.pawan.krd)]
@@ -19,13 +17,10 @@ A simple Node.js module for interacting with the ChatGPT without using any **~~B
 ```javascript
 import chatGPT from "chatgpt-io";
 
-(async () => {
-  let bot = new chatGPT("<SESSION_TOKEN>");
-  await bot.waitForReady();
+let bot = new chatGPT("<SESSION_TOKEN>");
+let response = await bot.ask("Hello?");
+console.log(response);
 
-  let response = await bot.ask("Hello?");
-  console.log(response);
-})();
 ```
 
 ## How the new method working without a browser?
