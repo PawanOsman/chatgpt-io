@@ -1,60 +1,55 @@
 import LogLevel from "../enums/log-level.js";
-import getCurrentTime from "../helpers/getCurrentTime.js";
+import getCurrentTime from "../utils/getCurrentTime.js";
 
 class Log {
-  logLevel: LogLevel;
+	logLevel: LogLevel;
 
-  constructor(logLevel: LogLevel) {
-    this.logLevel = logLevel;
-  }
+	constructor(logLevel: LogLevel) {
+		this.logLevel = logLevel;
+	}
 
-  private isObject(a: any) {
-    return !!a && a.constructor === Object;
-  }
+	private isObject(a: any) {
+		return !!a && a.constructor === Object;
+	}
 
-  private isArray(a: any) {
-    return !!a && a.constructor === Array;
-  }
+	private isArray(a: any) {
+		return !!a && a.constructor === Array;
+	}
 
-  trace(message: any) {
-    if (this.isArray(message) || this.isObject(message))
-      message = JSON.stringify(message);
-    if (this.logLevel <= LogLevel.Trace) {
-      console.log(`[TRACE] ${getCurrentTime()} ${message}`);
-    }
-  }
+	trace(message: any) {
+		if (this.isArray(message) || this.isObject(message)) message = JSON.stringify(message);
+		if (this.logLevel <= LogLevel.Trace) {
+			console.log(`[TRACE] ${getCurrentTime()} ${message}`);
+		}
+	}
 
-  debug(message: any) {
-    if (this.isArray(message) || this.isObject(message))
-      message = JSON.stringify(message);
-    if (this.logLevel <= LogLevel.Debug) {
-      console.log(`[DEBUG] ${getCurrentTime()} ${message}`);
-    }
-  }
+	debug(message: any) {
+		if (this.isArray(message) || this.isObject(message)) message = JSON.stringify(message);
+		if (this.logLevel <= LogLevel.Debug) {
+			console.log(`[DEBUG] ${getCurrentTime()} ${message}`);
+		}
+	}
 
-  info(message: any) {
-    if (this.isArray(message) || this.isObject(message))
-      message = JSON.stringify(message);
-    if (this.logLevel <= LogLevel.Info) {
-      console.log(`[INFO] ${getCurrentTime()} ${message}`);
-    }
-  }
+	info(message: any) {
+		if (this.isArray(message) || this.isObject(message)) message = JSON.stringify(message);
+		if (this.logLevel <= LogLevel.Info) {
+			console.log(`[INFO] ${getCurrentTime()} ${message}`);
+		}
+	}
 
-  warn(message: any) {
-    if (this.isArray(message) || this.isObject(message))
-      message = JSON.stringify(message);
-    if (this.logLevel <= LogLevel.Warning) {
-      console.log(`[WARN] ${getCurrentTime()} ${message}`);
-    }
-  }
+	warn(message: any) {
+		if (this.isArray(message) || this.isObject(message)) message = JSON.stringify(message);
+		if (this.logLevel <= LogLevel.Warning) {
+			console.log(`[WARN] ${getCurrentTime()} ${message}`);
+		}
+	}
 
-  error(message: any) {
-    if (this.isArray(message) || this.isObject(message))
-      message = JSON.stringify(message);
-    if (this.logLevel <= LogLevel.Error) {
-      console.log(`[ERROR] ${getCurrentTime()} ${message}`);
-    }
-  }
+	error(message: any) {
+		if (this.isArray(message) || this.isObject(message)) message = JSON.stringify(message);
+		if (this.logLevel <= LogLevel.Error) {
+			console.log(`[ERROR] ${getCurrentTime()} ${message}`);
+		}
+	}
 }
 
 export default Log;

@@ -4,7 +4,8 @@ enum ErrorType {
 	AnotherMessageInProgress = 3,
 	SessionTokenExpired = 4,
 	MessageTooLong = 5,
-	UnknownError = 6,
+	ConversationNotFound = 6,
+	UnknownError = 7,
 }
 
 export default ErrorType;
