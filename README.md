@@ -1,5 +1,3 @@
-# Update 21-JAN-2023
-
 ## For support join [[Discord](https://discord.pawan.krd)]
 
 # chatgpt-io - Unofficial API client for ChatGPT [[Discord](https://discord.pawan.krd)]
