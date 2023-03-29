@@ -1,11 +1,10 @@
-import AccountType from "../enums/account-type.js";
 import LogLevel from "../enums/log-level.js";
 
 interface Options {
 	name?: string;
 	logLevel?: LogLevel;
 	bypassNode?: string;
-	accountType?: AccountType;
+	model?: string;
 	configsDir?: string;
 	saveInterval?: number;
 }

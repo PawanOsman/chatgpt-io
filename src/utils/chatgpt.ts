@@ -40,6 +40,9 @@ async function sendMessage(callback: (arg0: string) => void, bypassNode: string,
 		messages: [
 			{
 				id: randomUUID(),
+				author: {
+					role: "user",
+				},
 				role: "user",
 				content: {
 					content_type: "text",
@@ -76,31 +79,16 @@ async function sendMessage(callback: (arg0: string) => void, bypassNode: string,
 
 		let dataToReturn: any;
 
-		if (response.headers["content-type"] === "application/json") {
-			let dataCollected = await new Promise<string>((resolve) => {
-				let dataChunks = "";
-				response.data.on("data", (chunk: any) => {
-					dataChunks += chunk;
-				});
-				response.data.on("end", () => {
-					dataToReturn = JSON.parse(dataChunks);
-					resolve(dataToReturn);
-				});
-			});
-			dataToReturn = dataCollected;
-		} else {
-			let dataToReturnString = "";
-			for await (const message of streamCompletion(response.data)) {
-				try {
-					const parsed = JSON.parse(message);
-					let text = parsed.message.content.parts[0];
-					dataToReturn = parsed;
-					callback(text.replace(dataToReturnString, ""));
-					dataToReturnString = text;
-				} catch (error) {
-					throw new  Error("Could not JSON parse stream message", message, error)
-					//console.error("Could not JSON parse stream message", message, error);
-				}
+		let dataToReturnString = "";
+		for await (const message of streamCompletion(response.data)) {
+			try {
+				const parsed = JSON.parse(message);
+				let text = parsed.message.content.parts[0];
+				dataToReturn = parsed;
+				if (text && text !== "") callback(text.replace(dataToReturnString, ""));
+				dataToReturnString = text;
+			} catch (error) {
+				console.error("Could not JSON parse stream message", message, error);
 			}
 		}
 
@@ -109,74 +97,50 @@ async function sendMessage(callback: (arg0: string) => void, bypassNode: string,
 		result.data.answer = dataToReturn.message?.content.parts[0] ?? "";
 		result.data.messageId = dataToReturn.message?.id ?? "";
 		result.data.conversationId = dataToReturn.conversation_id;
+	} catch (error: any) {
+		try {
+			result.status = false;
+			if (error.response && error.response.data) {
+				let errorResponseStr = "";
 
-		if (dataToReturn.detail) {
-			if (isObject(dataToReturn.detail)) {
-				if (dataToReturn.detail.message) {
-					result.status = false;
-					result.errorType = processError(dataToReturn.detail.message);
-					result.error = dataToReturn.detail.message;
+				for await (const message of error.response.data) {
+					errorResponseStr += message;
+				}
+
+				const errorResponseJson = JSON.parse(errorResponseStr);
+
+				if (errorResponseJson.error) {
+					result.error = errorResponseJson.error;
+					result.errorType = processError(errorResponseJson.error);
+				} else if (errorResponseJson.detail) {
+					if (isObject(errorResponseJson.detail)) {
+						result.error = errorResponseJson.detail.message;
+						result.errorType = processError(errorResponseJson.detail.message);
+					} else {
+						result.error = errorResponseJson.detail;
+						result.errorType = processError(errorResponseJson.detail);
+					}
+				} else if (errorResponseJson.details) {
+					if (isObject(errorResponseJson.details)) {
+						result.error = errorResponseJson.details.message;
+						result.errorType = processError(errorResponseJson.details.message);
+					} else {
+						result.error = errorResponseJson.details;
+						result.errorType = processError(errorResponseJson.details);
+					}
+				} else {
+					result.error = error.message;
+					result.errorType = processError(error.message);
 				}
 			} else {
-				result.status = false;
-				result.errorType = processError(dataToReturn.detail);
-				result.error = dataToReturn.detail;
+				result.error = error.message;
+				result.errorType = processError(error.message);
 			}
-		} else if (dataToReturn.details) {
-			if (isObject(dataToReturn.details)) {
-				if (dataToReturn.details.message) {
-					result.status = false;
-					result.errorType = processError(dataToReturn.details.message);
-					result.error = dataToReturn.details.message;
-				}
-			} else {
-				result.status = false;
-				result.errorType = processError(dataToReturn.details);
-				result.error = dataToReturn.details;
-			}
-		} else {
-			if (result.data.answer === "") {
-				result.status = false;
-				result.errorType = ErrorType.UnknownError;
-				result.error = "Failed to get response. ensure your session token is valid and isn't expired.";
-			}
-		}
-	} catch (err: any) {
-		let dataToReturn = err.response?.data;
-		if (dataToReturn?.detail) {
-			if (isObject(dataToReturn?.detail)) {
-				if (dataToReturn?.detail?.message) {
-					result.status = false;
-					result.errorType = processError(dataToReturn?.detail?.message);
-					result.error = dataToReturn?.detail?.message;
-				}
-			} else {
-				result.status = false;
-				result.errorType = processError(dataToReturn?.detail);
-				result.error = dataToReturn?.detail;
-			}
-		} else if (dataToReturn?.details) {
-			if (isObject(dataToReturn?.details)) {
-				if (dataToReturn?.details?.message) {
-					result.status = false;
-					result.errorType = processError(dataToReturn?.details?.message);
-					result.error = dataToReturn?.details?.message;
-				}
-			} else {
-				result.status = false;
-				result.errorType = processError(dataToReturn?.details);
-				result.error = dataToReturn?.details;
-			}
-		} else {
-			if (result.data.answer === "") {
-				result.status = false;
-				result.errorType = ErrorType.UnknownError;
-				result.error = "Failed to get response. ensure your session token is valid and isn't expired.";
-			} else {
-				result.status = false;
-				result.errorType = ErrorType.UnknownError;
-				result.error = err.toString();
-			}
+		} catch (e) {
+			console.log(e);
+			result.status = false;
+			result.error = error.message;
+			result.errorType = processError(error.message);
 		}
 	}
 
@@ -201,8 +165,8 @@ async function getTokens(bypassNode: string, sessionToken: string): Promise<Resu
 			sessionToken: "",
 		},
 		error: null,
-		errorType: ErrorType.AccountRateLimitExceeded,
-		status: false,
+		errorType: ErrorType.UnknownError,
+		status: true,
 	};
 
 	try {
@@ -220,7 +184,35 @@ async function getTokens(bypassNode: string, sessionToken: string): Promise<Resu
 		result.data.expires = response.data.expires;
 		result.data.sessionToken = sessionCookie.split("=")[1];
 	} catch (err: any) {
-		throw new Error(`Could not find or parse actual response text due to: ${err}`);
+		result.status = false;
+		if (err.response && err.response.data) {
+			if (err.response.data.error) {
+				result.error = err.response.data.error;
+				result.errorType = processError(err.response.data.error);
+			} else if (err.response.data.detail) {
+				if (isObject(err.response.data.detail)) {
+					result.error = err.response.data.detail.message;
+					result.errorType = processError(err.response.data.detail.message);
+				} else {
+					result.error = err.response.data.detail;
+					result.errorType = processError(err.response.data.detail);
+				}
+			} else if (err.response.data.details) {
+				if (isObject(err.response.data.details)) {
+					result.error = err.response.data.details.message;
+					result.errorType = processError(err.response.data.details.message);
+				} else {
+					result.error = err.response.data.details;
+					result.errorType = processError(err.response.data.details);
+				}
+			} else {
+				result.error = err.message;
+				result.errorType = processError(err.message);
+			}
+		} else {
+			result.error = err.message;
+			result.errorType = processError(err.message);
+		}
 	}
 
 	return result;

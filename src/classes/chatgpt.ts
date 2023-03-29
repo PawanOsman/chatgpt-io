@@ -4,7 +4,6 @@ import Log from "./log.js";
 import ErrorType from "../enums/error-type.js";
 import fs from "fs";
 import Options from "../models/options.js";
-import AccountType from "../enums/account-type.js";
 import Conversation from "../models/conversation.js";
 import wait from "../utils/wait.js";
 import { sendMessage, getTokens, validateToken } from "../utils/chatgpt.js";
@@ -24,9 +23,9 @@ class ChatGPT {
 		this.options = {
 			name: options?.name ?? "default",
 			logLevel: options?.logLevel ?? LogLevel.Info,
-			accountType: options?.accountType ?? AccountType.Free,
+			model: options?.model ?? "text-davinci-002-render-sha",
 			saveInterval: options?.saveInterval ?? 1000 * 60,
-			bypassNode: options?.bypassNode ?? "https://gpt.pawan.krd",
+			bypassNode: options?.bypassNode ?? "https://api.pawan.krd",
 			configsDir: options?.configsDir ?? "configs",
 		};
 
@@ -148,23 +147,7 @@ class ChatGPT {
 		if (!this.accessToken || !validateToken(this.accessToken)) await this.getTokens();
 		let conversation = this.getConversationById(id, parentId);
 
-		let model: string;
-
-		switch (this.options.accountType) {
-			case AccountType.Free:
-				model = "text-davinci-002-render";
-				break;
-			case AccountType.Plus:
-				model = "text-davinci-002-render-paid";
-				break;
-			case AccountType.Turbo:
-				model = "text-davinci-002-render-sha";
-				break;
-			default:
-				model = "text-davinci-002-render";
-		}
-
-		let result = await sendMessage(callback, this.options.bypassNode, this.accessToken, model, prompt, parentId ?? conversation.parentId, conversation.conversationId);
+		let result = await sendMessage(callback, this.options.bypassNode, this.accessToken, this.options.model, prompt, parentId ?? conversation.parentId, conversation.conversationId);
 
 		if (!result.status) {
 			this.log.error(result.error);
@@ -175,23 +158,23 @@ class ChatGPT {
 			conversation.conversationId = result.data.conversationId;
 		}
 
-		return result.data;
+		return result;
 	}
 
 	public async ask(prompt: string, id: string = "default", parentId?: string) {
-		let data = await this.send((_) => {}, prompt, id, parentId);
-		return data.answer;
+		let result = await this.send((_) => {}, prompt, id, parentId);
+		return result.data.answer;
 	}
 
 	public async askStream(callback: (arg0: string) => void, prompt: string, id: string = "default", parentId?: string) {
-		let data = await this.send(callback, prompt, id, parentId);
-		return data.answer;
+		let result = await this.send(callback, prompt, id, parentId);
+		return result.data.answer;
 	}
 
 	private async getTokens() {
 		await wait(1000);
 		let result = await getTokens(this.options.bypassNode, this.sessionToken);
-		if (result.status) {
+		if (!result.status) {
 			this.log.error(result.error);
 			if (this.onError) this.onError(result.errorType);
 			throw new Error(result.error);
