@@ -12,7 +12,7 @@
 
 ## [Check the new Google Bard Chatbot!](https://github.com/PawanOsman/GoogleBard)
 
-A simple Node.js module for interacting with the ChatGPT without using any **~~Browser~~**.
+A simple NPM package for interacting with the ChatGPT without a browser.
 
 ```javascript
 import chatGPT from "chatgpt-io";
@@ -20,8 +20,16 @@ import chatGPT from "chatgpt-io";
 let bot = new chatGPT("<SESSION_TOKEN>");
 let response = await bot.ask("Hello?");
 console.log(response);
-
 ```
+
+## Table of Contents
+
+- [How the new method working without a browser?](#how-the-new-method-working-without-a-browser)
+- [Installation](#installation)
+- [Usage](#usage)
+- [API Reference](#api-reference)
+- [Example](#example)
+- [License](#license)
 
 ## How the new method working without a browser?
 
@@ -37,26 +45,20 @@ npm install chatgpt-io
 
 ## Usage
 
-To use the package, require it in your code and create a new instance of the `chatGPT` class, passing in your ChatGPT API session token as an argument.
+To use the package, require it in your code and create a new instance of the `ChatGPT` class, passing in your ChatGPT API session token as an argument.
 
 ```javascript
-import chatGPT from "chatgpt-io";
+import ChatGPT from "chatgpt-io";
 
-let bot = new chatGPT("<SESSION_TOKEN>");
+let bot = new ChatGPT("<SESSION_TOKEN>");
 
-// or if your accounts is pro
-let bot = new chatGPT("<SESSION_TOKEN>", {
-    proAccount: true
+// set the model manually, for plus accounts
+let bot = new ChatGPT("<SESSION_TOKEN>", {
+	model: "text-davinci-002-render-sha",
 });
 ```
 
-Before making any requests to the API, you should wait for the `bot` instance to be ready by calling the `waitForReady` method. This ensures that the connection to the API has been established and any necessary setup has been completed.
-
-```javascript
-await bot.waitForReady();
-```
-
-Once the `bot` instance is ready, you can send a message to the API using the `ask` method. This method takes a message string as its first argument and an optional conversation ID as its second argument. If a conversation ID is not provided, the default conversation will be used.
+Then you can send a message to the API using the `ask` method. This method takes a message string as its first argument and an optional conversation ID as its second argument. If a conversation ID is not provided, the default conversation will be used.
 
 ```javascript
 let response = await bot.ask("Hello?");
@@ -67,28 +69,6 @@ console.log(response2);
 ```
 
 The `ask` method returns a promise that resolves with the API's response to the message.
-
-## ES6 Update
-
-This library is now using ES6 syntax and is intended to be used with the "module" type in your package.json file. This means that you will need to update your package.json file to include the following:
-
-```json
-{
-  "type": "module"
-}
-```
-
-In addition, you will need to change any instances of "require" to "import" in your code. For example, instead of:
-
-```javascript
-const chatGPT = require("chatgpt-io");
-```
-
-You will now use:
-
-```javascript
-import chatGPT from "chatgpt-io";
-```
 
 ## API Reference
 
@@ -105,95 +85,78 @@ Creates a new instance of the `ChatGPT` class.
 
 ```javascript
 options = {
-  name: string; // default = "default"
-  reconnection: boolean; // default = true
-  forceNew: boolean; // default = false
-  logLevel: LogLevel; // default = Info
-  bypassNode: string; // default = "https://gpt.pawan.krd"
-  proAccount: boolean; // default = false
+	name?: string;  // name of the instance (default: "chatgpt-io")
+	logLevel?: LogLevel;  // log level (default: LogLevel.Info)
+	bypassNode?: string; // bypass node url (default: https://api.pawan.krd)
+	model?: string; // model to use (default: text-davinci-002-render-sha)
+	configsDir?: string;  // directory to save configs (default: ./configs)
+	saveInterval?: number;  // interval to save configs (default: 1000 * 60 * 5)
 }
 ```
+
 ```javascript
-LogLevel = {
+LogLevel = {  // log levels
   Trace = 0,
   Debug = 1,
-  Info = 2,
+  Info = 2, // default
   Warning = 3,
   Error = 4
 }
 ```
 
-
-#### `waitForReady(): Promise<void>`
-
-Waits for the `chatGPT` instance to be ready to make requests to the API. Returns a promise that resolves when the instance is ready.
-
-#### `ask(message: string, conversationId?: string): Promise<string>`
+### `ask(prompt: string, id: string = "default", parentId?: string): Promise<string>`
 
 Sends a message to the API and returns a promise that resolves with the API's response.
 
-##### Parameters
+#### Parameters
 
 - `message` (string): The message to send to the API.
 - `conversationId` (string, optional): The ID of the conversation to send the message to. If not provided, the default conversation will be used.
+- `parentId` (string, optional): The ID of the parent message. If not provided, the message will not have a parent.
+
+### `askStream(callback: (arg0: string) => void, prompt: string, id: string = "default", parentId?: string): Promise<string>`
+
+Sends a message to the API and returns a promise that resolves with the API's response. This method is similar to `ask`, but it will call the callback function with the API's response as it is received instead of waiting for the entire response to be received.
+
+#### Parameters
+
+- `callback` (function): The callback function to call with the API's response as it is received.
+- `message` (string): The message to send to the API.
+- `conversationId` (string, optional): The ID of the conversation to send the message to. If not provided, the default conversation will be used.
+- `parentId` (string, optional): The ID of the parent message. If not provided, the message will not have a parent.
 
 ## Example
 
 Here is an example of how to use the `chatgpt-io` module to send a message to the API and log the response:
 
 ```javascript
-import chatGPT from "chatgpt-io";
+import ChatGPT from "chatgpt-io";
 
-(async function () {
-  let bot = new chatGPT("<SESSION_TOKEN>");
-  await bot.waitForReady();
+let bot = new ChatGPT("<SESSION_TOKEN>");
 
-  // default conversation
-  let response = await bot.ask("Hello?");
-  console.log(response);
+// default conversation
+let response = await bot.ask("Hello?");
+console.log(response);
 
-  // specific conversation
-  let response2 = await bot.ask("Hello?", "any-unique-string");
-  console.log(response2);
-})();
+// specific conversation
+let response2 = await bot.ask("Hello?", "any-unique-string");
+console.log(response2);
+
+// stream response
+await bot.askStream((response) => {
+	console.log(response);
+}, "Hello?");
+
+// stream response with conversation
+await bot.askStream(
+	(response) => {
+		console.log(response);
+	},
+	"Hello?",
+	"any-unique-string",
+);
 ```
 
-## Event example(Alpha)
+## License
 
-```javascript
-import chatGPT from "chatgpt-io";
-
-(async function () {
-  let bot = new chatGPT("<SESSION_TOKEN>");
-
-  bot.onConnected = async () => {
-    await bot.waitForReady();
-    // default conversation
-    let response = await bot.ask("Hello?");
-    console.log(response);
-  };
-})();
-```
-
-## Server Example
-
-In `examples/server.js` you can find an example of how to use the `chatgpt-io` module to create a simple Fastify server that can be used to send messages to ChatGPT.
-
-Run the server by setting the `CHATGPT_SESSION_TOKEN` environment variable to your ChatGPT API session token and running the following command:
-
-```bash
-node examples/server.js
-```
-
-You can also set the port with the `CHATGPT_PORT` environment variable. The default port is `3000`.
-
-To send a message to the server, make a `POST` request to `http://localhost:<port>/ask` with the following JSON body:
-
-```json
-{
-  "message": "Hello?",
-  "conversation_id": "any-unique-string"
-}
-```
-
-A standalone version of this API server can be found at [chatgpt-io-api](https://github.com/waylaidwanderer/chatgpt-io-api).
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
